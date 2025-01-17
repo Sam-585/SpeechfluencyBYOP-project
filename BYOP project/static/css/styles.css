@@ -1,0 +1,54 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+    margin: 0;
+}
+
+.sidebar {
+    width: 200px;
+    background: #333;
+    color: #fff;
+    padding: 20px;
+    height: 100%;
+}
+
+.sidebar h2 {
+    margin-bottom: 20px; /* Add space between titles in the sidebar */
+}
+
+.sidebar ul {
+    padding-left: 0; /* Remove left padding for list */
+    list-style: none; /* Remove bullet points from the list */
+}
+
+.sidebar a {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    margin: 10px 0;
+}
+
+.sidebar a:hover {
+    background: #575757;
+    padding-left: 10px;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+}
+
+#record-btn img {
+    width: 50px;
+    cursor: pointer;
+}
+
+.speech-container {
+    text-align: center;
+}
+
+#analysis-results {
+    margin-top: 20px;
+    text-align: left;
+}

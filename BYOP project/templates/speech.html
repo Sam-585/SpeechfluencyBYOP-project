@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/speech.css') }}">
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<div class="speech-container">
+    <h2>Speech Analysis</h2>
+    <button id="record-btn" title="Click to Start/Stop Recording">
+        CLICK HERE
+    </button>
+    <div id="analysis-results"></div>
+</div>
+
+<script>
+    let isRecording = false;
+    let recognition;
+    let transcript = '';
+    let startTime, endTime;
+    let fillerWords = ['um', 'uh', 'like', 'you know', 'actually', 'basically', 'seriously'];
+    let fillerCount = 0;
+    let wordCount = 0;
+
+    if (!('webkitSpeechRecognition' in window)) {
+        alert('Your browser does not support Speech Recognition.');
+    } else {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        recognition.maxAlternatives = 1;
+    }
+
+    // Speech Recognition - Start and Stop Recording
+    document.getElementById("record-btn").addEventListener("click", function() {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    });
+
+    function startRecording() {
+        isRecording = true;
+        document.getElementById("record-btn").innerHTML = "⏹️"; 
+        recognition.start();
+        startTime = new Date();  // Start time when recording begins
+
+        recognition.onresult = function(event) {
+            let currentTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                currentTranscript += event.results[i][0].transcript;
+            }
+            transcript = currentTranscript;
+            document.getElementById("analysis-results").innerHTML = `
+                <h3>Transcription:</h3>
+                <p>${transcript}</p>
+            `;
+
+            // Update word count and filler word usage
+            updateStatistics(transcript);
+            speakText(transcript);  // Speak the transcribed text
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Error in recognition: ', event.error);
+        };
+
+        recognition.onend = function() {
+            console.log("Speech recognition stopped.");
+            endTime = new Date();  // End time when recording stops
+            updateStatistics(transcript); // Update stats after recognition ends
+            redirectToChartPage();  // Redirect to the chart page with data
+        };
+    }
+
+    
+    function stopRecording() {
+        isRecording = false;
+        document.getElementById("record-btn").innerHTML = "🎤";
+        recognition.stop();
+    }
+
+    // Function to convert text to speech (SpeechSynthesis)
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            let utterance = new SpeechSynthesisUtterance(text);  // Create a new speech utterance
+            utterance.lang = 'en-US';  // Set language
+            window.speechSynthesis.speak(utterance);  // Speak the text
+        } else {
+            console.log("Speech synthesis not supported in this browser.");
+        }
+    }
+
+    // Function to calculate Words Per Minute and Filler Words Usage
+    function updateStatistics(text) {
+        // Count words
+        wordCount = text.split(/\s+/).filter(Boolean).length;
+
+        // Count filler words
+        fillerCount = 0;
+        let words = text.toLowerCase().split(/\s+/);
+        for (let word of words) {
+            if (fillerWords.includes(word)) {
+                fillerCount++;
+            }
+        }
+    }
+
+    
+    function redirectToChartPage() {
+        // Calculate Words Per Minute
+        let durationInMinutes = (endTime - startTime) / 60000; 
+        let wordsPerMinute = wordCount / durationInMinutes;
+
+        // Store the data in localStorage
+        localStorage.setItem('wordsPerMinute', wordsPerMinute);
+        localStorage.setItem('fillerCount', fillerCount);
+
+        // Redirect to chart.html
+        window.location.href = "/chart.html";  
+    }
+    // Check if a file is uploaded and form is submitted
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();  // Prevent the default form submission
+
+        const formData = new FormData(form);
+        fetch("/speech", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Save data to localStorage
+            localStorage.setItem('wordsPerMinute', data.wpm);
+            localStorage.setItem('fillerCount', data.filler_count);
+            localStorage.setItem('fillerWords', data.filler_words.join(','));
+
+            // Redirect to the chart page to show the results
+            window.location.href = "/chart.html";
+        })
+        .catch(error => {
+            console.error("Error during audio processing:", error);
+        });
+    });
+
+
+</script>
+
+{% endblock %}

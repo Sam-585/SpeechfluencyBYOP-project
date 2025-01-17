@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+</head>
+<div class="dashboard-container">
+    <h1>Welcome to Speech Analysis Dashboard</h1>
+    <p>Analyze your speech fluency, words per minute, and filler word usage with ease!</p>
+    
+    <div class="feature-cards">
+        <div class="card">
+            <h2>Speech Analysis</h2>
+            <p>Record your speech and get detailed analysis.</p>
+            <a href="/speech" class="button">Go to Speech Analysis</a>
+        </div>
+        <div class="card">
+            <h2>Charts & Insights</h2>
+            <p>Visualize your speech statistics and trends.</p>
+            <a href="/chart.html" class="button">View Charts</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

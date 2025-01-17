@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/speech.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<div class="chart-container">
+    <h2>Speech Analysis Results</h2>
+    
+    <!-- Display Word Cloud -->
+    <!-- <div id="wordcloud-container">
+        <h3>Word Cloud:</h3>
+        <img id="wordcloud" src="" alt="Word Cloud" style="max-width: 100%; height: auto;">
+    </div> -->
+    
+    <!-- Display Analysis Results -->
+    <div id="analysis-results">
+        <h3>Analysis:</h3>
+        <p><strong>Words Per Minute:</strong> <span id="wpm"></span></p>
+        <p><strong>Filler Words Count:</strong> <span id="filler-count"></span></p>
+        <p><strong>Filler Words:</strong> <span id="filler-words"></span></p>
+    </div>
+
+    <!-- Display Chart -->
+    <div id="chart-container">
+        <canvas id="wpm-chart"></canvas>
+    </div>
+</div>
+
+<script>
+    // Fetch the values from localStorage
+    const wordsPerMinute = localStorage.getItem('wordsPerMinute');
+    const fillerCount = localStorage.getItem('fillerCount');
+    const fillerWords = localStorage.getItem('fillerWords');
+    const wordcloudImage = localStorage.getItem('wordcloud_image');
+
+    // Set Word Cloud Image
+    if (wordcloudImage) {
+        document.getElementById('wordcloud').src = 'data:image/png;base64,' + wordcloudImage;
+    }
+
+    // Display Text Analysis Results
+    document.getElementById('wpm').textContent = wordsPerMinute;
+    document.getElementById('filler-count').textContent = fillerCount;
+    document.getElementById('filler-words').textContent = fillerWords;
+
+    // Chart.js - Create the WPM Chart
+    const ctx = document.getElementById('wpm-chart').getContext('2d');
+    const wpmChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Words Per Minute'],
+            datasets: [{
+                label: 'Words Per Minute (WPM)',
+                data: [wordsPerMinute],
+                backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+                borderColor: ['rgba(75, 192, 192, 1)'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}
